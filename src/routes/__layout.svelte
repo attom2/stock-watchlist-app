@@ -1,14 +1,23 @@
 <script lang="ts">
-	import Header from '$lib/header/Header.svelte';
 	import '../app.css';
-</script>
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
-<Header />
+	onMount(() => {
+		const currentUser = typeof window !== 'undefined' ? localStorage.getItem('currentUser') : '';
+		if (!currentUser) {
+			goto('/');
+		}
+	})
+</script>
 
 <main>
 	<slot />
 </main>
 
+<footer>
+	<a href="https://iexcloud.io">Data provided by IEX Cloud</a>
+</footer>
 
 <style>
 	main {
@@ -23,11 +32,15 @@
 	}
 
 	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 40px;
+		position: absolute;
+		bottom: 0;
+		width: 100%;
+		height: 2.5rem;
+		text-align: center;
+	}
+
+	footer a {
+		font-weight: bold;
 	}
 
 	@media (min-width: 480px) {
