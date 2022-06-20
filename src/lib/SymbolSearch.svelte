@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" context="module">
 	import LinearProgress from '@smui/linear-progress';
 	import Textfield from '@smui/textfield';
 	import HelperText from '@smui/textfield/helper-text';
@@ -35,10 +35,10 @@
 </script>
 
 <div class="search">
-	<Textfield class="full-width" label="Symbol" bind:value={search} on:input={searchForSymbols}>
+	<Textfield variant="filled" class="full-width" label="Symbol" bind:value={search} on:input={searchForSymbols}>
 		<HelperText persistent slot="helper">EX: AAPL, GOOG</HelperText>
 	</Textfield>
-	<List class="list mt-1" twoLine singleSelection dense>
+	<List class="list mt-1 " twoLine singleSelection dense>
 		{#each searchPreviews as item}
 			<Item on:click={() => symbolClick(item)} selected={selection === item.symbol}>
 				<Text>
