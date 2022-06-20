@@ -1,9 +1,18 @@
-<script lang="ts" context="module">
+<script lang="ts">
 	import LinearProgress from '@smui/linear-progress';
 	import Textfield from '@smui/textfield';
 	import HelperText from '@smui/textfield/helper-text';
 	import List, { Item, Meta, Text, PrimaryText, SecondaryText } from '@smui/list';
+	import { createEventDispatcher } from 'svelte';
+	export let index;
+	const dispatch = createEventDispatcher();
 
+	function assignToWatchlist(item) {
+		dispatch('assignToWatchlist', {
+			item,
+			index
+		});
+	}
 	let searchPreviews: SymbolInfo[] = [];
 	let search: string = '';
 	type SymbolInfo = {
@@ -29,13 +38,20 @@
 	const symbolClick = async (item: SymbolInfo) => {
 		selection = item.symbol;
 		searchPreviews = [];
+		assignToWatchlist(item);
 	};
 
 	let selection = '';
 </script>
 
 <div class="search">
-	<Textfield variant="filled" class="full-width" label="Symbol" bind:value={search} on:input={searchForSymbols}>
+	<Textfield
+		variant="filled"
+		class="full-width"
+		label="Symbol"
+		bind:value={search}
+		on:input={searchForSymbols}
+	>
 		<HelperText persistent slot="helper">EX: AAPL, GOOG</HelperText>
 	</Textfield>
 	<List class="list mt-1 " twoLine singleSelection dense>
