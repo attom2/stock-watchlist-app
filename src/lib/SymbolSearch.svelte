@@ -1,5 +1,4 @@
 <script lang="ts">
-	import LinearProgress from '@smui/linear-progress';
 	import Textfield from '@smui/textfield';
 	import HelperText from '@smui/textfield/helper-text';
 	import List, { Item, Meta, Text, PrimaryText, SecondaryText } from '@smui/list';
@@ -38,10 +37,22 @@
 	const symbolClick = async (item: SymbolInfo) => {
 		selection = item.symbol;
 		searchPreviews = [];
+		search = '';
 		assignToWatchlist(item);
 	};
 
 	let selection = '';
+
+	function debounce(func, timeout = 100) {
+		let timer;
+		return (...args) => {
+			clearTimeout(timer);
+			timer = setTimeout(() => {
+				func.apply(this, args);
+			}, timeout);
+		};
+	}
+	const processChange = debounce(() => searchForSymbols());
 </script>
 
 <div class="search">
@@ -50,7 +61,7 @@
 		class="full-width"
 		label="Symbol"
 		bind:value={search}
-		on:input={searchForSymbols}
+		on:input={processChange}
 	>
 		<HelperText persistent slot="helper">EX: AAPL, GOOG</HelperText>
 	</Textfield>
