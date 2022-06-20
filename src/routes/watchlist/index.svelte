@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button, { Label } from '@smui/button';
+	import WatchlistTable from './watchlistTable.svelte';
 	const getCurrentQuote = async (symbol: string) => {
 		const token = 'pk_90b7dfff38d043d483fedc63be2de505';
 		const response = await fetch(
@@ -15,9 +16,14 @@
 	};
 </script>
 
+<svelte:head>
+  <title>Watchlists</title>
+</svelte:head>
+
 <div class="content">
-	<h1>Watchlists - {currentUser}</h1>
 	<Button on:click={logout}>Log out</Button>
+	<h1>Watchlists - {currentUser}</h1>
+	<WatchlistTable />
 </div>
 
 <style>
