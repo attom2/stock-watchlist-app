@@ -1,11 +1,11 @@
 <script lang="ts">
 	import SymbolSearch from '$lib/SymbolSearch.svelte';
 	import { onMount } from 'svelte';
-	import Button, { Group, Label } from '@smui/button';
+	import Button, { Group, Label, Icon } from '@smui/button';
 	import List, { Item, Graphic, Meta, Text, PrimaryText, SecondaryText } from '@smui/list';
+	import mockData from './mockData';
 
 	const getCurrentQuote = async (symbol: string) => {
-		const token = 'pk_90b7dfff38d043d483fedc63be2de505';
 		const response = await fetch(
 			`https://cloud.iexapis.com/stable/stock/${symbol}/quote?token=${token}`
 		);
@@ -61,6 +61,18 @@
 		watchlists = watchlists;
 	};
 	let currentWatchlistIndex = 0;
+	const token = 'pk_3e49b40149a446638c161be217c45003';
+
+	const getChartData = async (item) => {
+		// const response = await fetch(
+		// 	`https://cloud.iexapis.com/stable/stock/${item.symbol}/chart/3m?token=${token}`,
+		// );
+		// const data = await response.json();
+		const data = mockData;
+		console.log(data);
+		return data;
+
+	};
 </script>
 
 <List twoLine avatarList singleSelection bind:selectedIndex={currentWatchlistIndex}>
@@ -73,28 +85,12 @@
 	{/each}
 </List>
 <button on:click={addNewWatchList}>Add new watchlist</button>
-<!-- <Group class="w-full" style="display: flex; justify-content: stretch;">
-	{#each watchlists as watchlist, i}
-		<Button on:click={() => (currentWatchlistIndex = i)} style="width: {100 / watchlists.length}%;">
-			<Label>{watchlist.name}</Label>
-		</Button>
-	{/each}
-</Group> -->
 <!-- table styling found on https://flowbite.com/docs/components/tables/  -->
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
 	<table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
 		<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
 			<tr>
-				<th scope="col" class="p-4">
-					<div class="flex items-center">
-						<input
-							id="checkbox-all-search"
-							type="checkbox"
-							class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-						/>
-						<label for="checkbox-all-search" class="sr-only">checkbox</label>
-					</div>
-				</th>
+				<th scope="col" class="p-4" />
 				<th scope="col" class="px-6 py-3"> Stock Symbol </th>
 				<th scope="col" class="px-6 py-3"> Description </th>
 				<th scope="col" class="px-6 py-3"> Bid Price </th>
@@ -110,14 +106,9 @@
 						class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
 					>
 						<td class="w-4 p-4">
-							<div class="flex items-center">
-								<input
-									id="checkbox-table-search-1"
-									type="checkbox"
-									class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-								/>
-								<label for="checkbox-table-search-1" class="sr-only">checkbox</label>
-							</div>
+							<Button on:click={getChartData(item)}>
+								<Label>View Chart</Label>
+							</Button>
 						</td>
 						<th
 							scope="row"
@@ -133,9 +124,9 @@
 							<button
 								on:click={async () => await deleteSymbol(item, watchlists[currentWatchlistIndex])}
 							>
-								X
-							</button></td
-						>
+								<span class="material-icons">delete</span>
+							</button>
+						</td>
 					</tr>
 				{/each}
 			{/if}
