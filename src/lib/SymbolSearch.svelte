@@ -65,7 +65,7 @@
 	>
 		<HelperText persistent slot="helper">EX: AAPL, GOOG</HelperText>
 	</Textfield>
-	<List class="list mt-1 " twoLine singleSelection dense>
+	<List class="list mt-1" twoLine singleSelection dense>
 		{#each searchPreviews as item}
 			<Item on:click={() => symbolClick(item)} selected={selection === item.symbol}>
 				<Text>
@@ -82,12 +82,14 @@
 
 <style>
 	.search {
-		width: 600px;
+		width: 500px;
 	}
 
 	* :global(.list) {
 		max-height: 400px;
 		overflow-y: scroll;
+		background: white;
+		position: absolute;
 	}
 
 	* :global(.full-width) {

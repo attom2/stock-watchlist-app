@@ -16,7 +16,7 @@
 </main>
 
 <footer>
-	<a href="https://iexcloud.io">Data provided by IEX Cloud</a>
+	<!-- <a href="https://iexcloud.io">Data provided by IEX Cloud</a> -->
 </footer>
 
 <style>
@@ -24,6 +24,8 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
+		justify-content: center;
+		align-items: center;
 		padding: 1rem;
 		width: 100%;
 		max-width: 1024px;
