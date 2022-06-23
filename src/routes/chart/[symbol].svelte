@@ -1,13 +1,10 @@
 <script lang="ts">
 	import Button, { Label } from '@smui/button';
-	import Textfield from '@smui/textfield';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import Line from 'svelte-chartjs/src/Line.svelte';
 	const urlPath = $page.url.toString().split('/');
 	const symbol = urlPath[urlPath.length - 1];
-	let name = '';
-	import mockData from '../watchlist/mockData';
 	import { onMount } from 'svelte';
 	const token = 'pk_3e49b40149a446638c161be217c45003';
 	const getChartData = async () => {
