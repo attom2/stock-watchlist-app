@@ -1,87 +1,48 @@
 <script lang="ts">
 	import SymbolSearch from '$lib/SymbolSearch.svelte';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import Button, { Label } from '@smui/button';
-	import List, { Item, Text, PrimaryText } from '@smui/list';
+	import List, { Item, Text, PrimaryText, Meta } from '@smui/list';
 	import Textfield from '@smui/textfield';
+	import Modal from './Modal.svelte';
+	let symbolModal;
+	let watchlistModal;
+	const token = 'pk_3e49b40149a446638c161be217c45003';
 	const getCurrentQuote = async (symbol: string) => {
-		// const response = await fetch(
-		// 	`https://cloud.iexapis.com/stable/stock/${symbol}/quote?token=${token}`
-		// );
-		// const data = await response.json();
-		const data = {
-			avgTotalVolume: 91065668,
-			calculationPrice: 'close',
-			change: 1.5,
-			changePercent: 0.01153,
-			close: null,
-			closeSource: 'official',
-			closeTime: null,
-			companyName: 'Apple Inc',
-			currency: 'USD',
-			delayedPrice: null,
-			delayedPriceTime: null,
-			extendedChange: null,
-			extendedChangePercent: null,
-			extendedPrice: null,
-			extendedPriceTime: null,
-			high: null,
-			highSource: 'Close',
-			highTime: 1655496001145,
-			iexAskPrice: null,
-			iexAskSize: null,
-			iexBidPrice: null,
-			iexBidSize: null,
-			iexClose: 131.48,
-			iexCloseTime: 1655495999384,
-			iexLastUpdated: null,
-			iexMarketPercent: null,
-			iexOpen: 130.07,
-			iexOpenTime: 1655472600114,
-			iexRealtimePrice: null,
-			iexRealtimeSize: null,
-			iexVolume: null,
-			lastTradeTime: 1655495999601,
-			latestPrice: 131.56,
-			latestSource: 'Close',
-			latestTime: 'June 17, 2022',
-			latestUpdate: 1655496000000,
-			latestVolume: null,
-			low: null,
-			lowSource: 'Close',
-			lowTime: 1655496000000,
-			marketCap: 2129322412360,
-			oddLotDelayedPrice: null,
-			oddLotDelayedPriceTime: null,
-			open: null,
-			openTime: null,
-			openSource: 'official',
-			peRatio: 21.39,
-			previousClose: 130.06,
-			previousVolume: 107961508,
-			primaryExchange: 'NASDAQ',
-			symbol: 'AAPL',
-			volume: null,
-			week52High: 182.44,
-			week52Low: 128.48,
-			ytdChange: -0.24554531853545128,
-			isUSMarketOpen: false
-		};
+		const response = await fetch(
+			`https://cloud.iexapis.com/stable/stock/${symbol}/quote?token=${token}`
+		);
+		const data = await response.json();
 		return data;
 	};
 
 	const getAllSymbolData = async (watchlist) => {
 		let items = [];
-		for (let i = 0; i < watchlist.data.length; i++) {
+		for (let i = 0; i < watchlist?.data.length; i++) {
 			const symbolData = await getCurrentQuote(watchlist.data[i].symbol);
 			items.push(symbolData);
 			watchlist.data[i] = { ...watchlist.data[i], ...symbolData };
 		}
 	};
 
+	const myInterval = setInterval(myTimer, 1000);
+
+	async function myTimer() {
+		await getAllSymbolData(watchlists[currentWatchlistIndex]);
+	}
+
+	function myStopFunction() {
+		clearInterval(myInterval);
+	}
+
 	onMount(async () => {
-		await getAllSymbolData(watchlists[0]);
-		watchlists = watchlists;
+		currentWatchlist = allWatchlists[currentUser][0] || {};
+
+		// resetWatchlist();
+	});
+
+	onDestroy(() => {
+		myStopFunction();
 	});
 
 	const deleteSymbol = async (symbolData: any, watchlist) => {
@@ -93,7 +54,7 @@
 		}
 		await saveUserWatchlist();
 		await getAllSymbolData(watchlist);
-		watchlists = watchlists;
+		currentWatchlist = currentWatchlist;
 	};
 	let allWatchlists =
 		typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('usersWatchlist')) : {};
@@ -103,71 +64,98 @@
 	const saveUserWatchlist = async () => {
 		localStorage.setItem('usersWatchlist', JSON.stringify(allWatchlists));
 		for (let i = 0; i < watchlists.length; i++) {
-			await getAllSymbolData(watchlists[i]);
+			await getAllSymbolData(currentWatchlist);
 		}
 	};
 
 	const saveWatchlist = async (event) => {
-		allWatchlists[currentUser][event.detail.index].data.push(event.detail.item);
+		currentWatchlist?.data.push(event.detail.item);
 		await saveUserWatchlist();
-		watchlists = watchlists;
+		currentWatchlist = currentWatchlist;
+		symbolModal.hide();
 	};
 	const addNewWatchList = async () => {
-		allWatchlists[currentUser].push({ name: newWatchlistName, data: [] });
+		watchlistModal.hide();
+		allWatchlists[currentUser].push({
+			name: newWatchlistName,
+			data: [],
+			id: Date.now()
+		});
 		await saveUserWatchlist();
 		watchlists = watchlists;
+		newWatchlistName = '';
 	};
 	let currentWatchlistIndex = 0;
-	const token = 'pk_3e49b40149a446638c161be217c45003';
 	let newWatchlistName = '';
+	let currentWatchlist = null;
+
+	const resetWatchlist = () => {
+		if (allWatchlists && allWatchlists[currentUser]) {
+			currentWatchlist = allWatchlists[currentUser][0];
+		}
+		currentWatchlist = currentWatchlist;
+	};
+
+	const deleteWatchlist = async () => {
+		if (allWatchlists[currentUser].length === 1) {
+			alert('Cannot delete last watchlist');
+			return;
+		}
+		const index = allWatchlists[currentUser].findIndex((list) => list.id === currentWatchlist.id);
+		console.log(index);
+		allWatchlists[currentUser].splice(index, 1);
+		allWatchlists = allWatchlists;
+		resetWatchlist();
+		await saveUserWatchlist();
+	};
 </script>
 
-<div class="flex">
-	<div class="flex justify-between" style="min-width: 200px">
+{#if currentWatchlist}
+	<div>
 		<div>
-			<List singleSelection bind:selectedIndex={currentWatchlistIndex} class="list">
-				{#each watchlists as watchlist, i}
-					<Item
-						on:click={() => (currentWatchlistIndex = i)}
-						selected={currentWatchlistIndex === i}
-						class="flex"
-					>
-						<Text class="py-2">
-							<PrimaryText>{watchlist.name}</PrimaryText>
-						</Text>
-					</Item>
-				{/each}
-			</List>
-			<div class="flex flex-col mt-3">
-				<Button variant="raised" on:click={addNewWatchList} disabled={!newWatchlistName.length}>
-					Add new watchlist
+			<h1>
+				{currentWatchlist.name}
+				<Button color="secondary" on:click={deleteWatchlist}>
+					<span class="material-icons">delete</span>
 				</Button>
-				<Textfield
-					variant="filled"
-					class="full-width"
-					label="New watchlist name"
-					bind:value={newWatchlistName}
-				/>
-			</div>
+			</h1>
 		</div>
-	</div>
-	<!-- table styling found on https://flowbite.com/docs/components/tables/  -->
-	<div class="flex justify-center">
-		<table class=" text-sm text-left text-gray-500 dark:text-gray-400">
-			<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-				<tr>
-					<th scope="col" class="p-4" />
-					<th scope="col" class="px-6 py-3"> Stock Symbol </th>
-					<th scope="col" class="px-6 py-3"> Description </th>
-					<th scope="col" class="px-6 py-3 text-center"> Bid Price </th>
-					<th scope="col" class="px-6 py-3 text-center"> Ask Price </th>
-					<th scope="col" class="px-6 py-3 text-center">Last Price </th>
-					<th scope="col" class="px-6 py-3 text-center">Delete </th>
-				</tr>
-			</thead>
-			<tbody>
-				{#if watchlists[currentWatchlistIndex]?.data}
-					{#each watchlists[currentWatchlistIndex]?.data as item}
+		<div class="flex">
+			<!-- table styling found on https://flowbite.com/docs/components/tables/  -->
+			<div class="flex flex-col" style="min-width: 200px">
+				<List singleSelection bind:selectedIndex={currentWatchlistIndex} class="list">
+					<div class="text-center bg-red-600 text-white">
+						{currentUser}'s Watchlists
+					</div>
+					{#each watchlists as watchlist, i}
+						<Item
+							on:click={() => (currentWatchlist = allWatchlists[currentUser].find(list => list.id == watchlist.id))}
+							selected={currentWatchlist?.id === watchlist?.id}
+						>
+							<Text class="py-2">
+								<PrimaryText>{watchlist.name}</PrimaryText>
+							</Text>
+						</Item>
+					{/each}
+				</List>
+				<Button variant="raised" on:click={() => watchlistModal.show()}>Add new watchlist</Button>
+			</div>
+			<table class=" text-sm text-left text-gray-500 dark:text-gray-400">
+				<thead
+					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+				>
+					<tr>
+						<th scope="col" class="p-4" />
+						<th scope="col" class="px-6 py-3"> Stock Symbol </th>
+						<th scope="col" class="px-6 py-3"> Description </th>
+						<th scope="col" class="px-6 py-3 text-center"> Bid Price </th>
+						<th scope="col" class="px-6 py-3 text-center"> Ask Price </th>
+						<th scope="col" class="px-6 py-3 text-center">Last Price </th>
+						<th scope="col" class="px-6 py-3 text-center">Delete </th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each currentWatchlist?.data as item}
 						<tr
 							class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
 						>
@@ -187,33 +175,51 @@
 							<td class="px-6 py-4 text-center"> {item?.iexAskPrice ?? '-'} </td>
 							<td class="px-6 py-4 text-center"> {item?.latestPrice ?? '-'} </td>
 							<td class="px-6 py-4 text-center">
-								<button
-									on:click={async () => await deleteSymbol(item, watchlists[currentWatchlistIndex])}
-								>
+								<button on:click={async () => await deleteSymbol(item, currentWatchlist)}>
 									<span class="material-icons">delete</span>
 								</button>
 							</td>
 						</tr>
 					{/each}
-				{/if}
-				<tr
-					class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-				>
-					<td colspan="12">
-						<div class="flex justify-center">
-							<Button style="width: 100%; min-height: 40px; height: 100%;">
-								<Label>Add a Symbol to Watchlist</Label>
-							</Button>
-						</div>
-					</td></tr
-				>
-			</tbody>
-		</table>
+					<tr
+						class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+					>
+						<td colspan="12">
+							<div class="flex justify-center">
+								<Button
+									on:click={() => symbolModal.show()}
+									variant="raised"
+									color="primary"
+									style="min-height: 40px; height: 100%;"
+								>
+									<Label>Add a Symbol to Watchlist</Label>
+								</Button>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	</div>
-	<div class="flex">
+	<Modal bind:this={symbolModal}>
 		<SymbolSearch on:assignToWatchlist={saveWatchlist} index={currentWatchlistIndex} />
-	</div>
-</div>
+	</Modal>
+	<Modal bind:this={watchlistModal}>
+		<div class="flex flex-col">
+			<h1>Add new watchlist</h1>
+
+			<Textfield
+				variant="filled"
+				class="full-width"
+				label="New watchlist name"
+				bind:value={newWatchlistName}
+			/>
+			<Button variant="raised" on:click={addNewWatchList} disabled={!newWatchlistName.length}>
+				Add
+			</Button>
+		</div>
+	</Modal>
+{/if}
 
 <style>
 	table {
@@ -227,6 +233,7 @@
 		overflow-y: scroll;
 		background: white;
 		padding: 0;
+		width: 100%;
 	}
 	td {
 		max-width: 100px;

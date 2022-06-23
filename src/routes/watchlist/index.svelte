@@ -15,7 +15,8 @@
 					{ symbol: 'AAPL', description: 'Apple Inc. - Common Stock' },
 					{ symbol: 'MSFT', description: 'Microsoft Corporation - Common Stock' },
 					{ symbol: 'SPY', description: 'SPDR S&P 500' }
-				]
+				],
+				id: Date.now(),
 			}
 		];
 		defaultWatchlist[currentUser] = defaultSymbols;
@@ -40,7 +41,6 @@
 
 <div class="content">
 	<Button on:click={logout}>Log out</Button>
-	<h1>Watchlists - {currentUser}</h1>
 	<WatchlistTable />
 </div>
 

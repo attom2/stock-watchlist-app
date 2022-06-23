@@ -43,7 +43,7 @@
 
 	let selection = '';
 
-	function debounce(func, timeout = 100) {
+	function debounce(func, timeout = 10) {
 		let timer;
 		return (...args) => {
 			clearTimeout(timer);
@@ -56,6 +56,7 @@
 </script>
 
 <div class="search">
+	<h1>Search for symbol</h1>
 	<Textfield
 		variant="filled"
 		class="full-width"
@@ -77,16 +78,25 @@
 				{/if}
 			</Item>
 		{/each}
+		{#if search.length > 0 && !searchPreviews.length}
+			<Item>
+				<Text>
+					<PrimaryText>No symbols found</PrimaryText>
+				</Text>
+			</Item>
+		{/if}
 	</List>
 </div>
 
 <style>
 	.search {
 		width: 500px;
+		padding: 20px;
 	}
 
 	* :global(.list) {
 		max-height: 400px;
+		width: 500px;
 		overflow-y: scroll;
 		background: white;
 		position: absolute;
@@ -95,4 +105,5 @@
 	* :global(.full-width) {
 		width: 100%;
 	}
+
 </style>
