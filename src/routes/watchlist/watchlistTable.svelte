@@ -8,6 +8,16 @@
 	let symbolModal;
 	let watchlistModal;
 	const token = 'pk_3e49b40149a446638c161be217c45003';
+	const myInterval = setInterval(myTimer, 5000);
+	let allWatchlists =
+		typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('usersWatchlist')) : {};
+	const currentUser = typeof window !== 'undefined' ? localStorage.getItem('currentUser') : '';
+
+	let watchlists = allWatchlists[currentUser] || [];
+	let currentWatchlistIndex = 0;
+	let newWatchlistName = '';
+	let currentWatchlist = null;
+
 	const getCurrentQuote = async (symbol: string) => {
 		const response = await fetch(
 			`https://cloud.iexapis.com/stable/stock/${symbol}/quote?token=${token}`
@@ -25,8 +35,6 @@
 		}
 	};
 
-	const myInterval = setInterval(myTimer, 1000);
-
 	async function myTimer() {
 		await getAllSymbolData(watchlists[currentWatchlistIndex]);
 	}
@@ -36,9 +44,7 @@
 	}
 
 	onMount(async () => {
-		currentWatchlist = allWatchlists[currentUser][0] || {};
-
-		// resetWatchlist();
+		currentWatchlist = allWatchlists[currentUser][0];
 	});
 
 	onDestroy(() => {
@@ -56,11 +62,7 @@
 		await getAllSymbolData(watchlist);
 		currentWatchlist = currentWatchlist;
 	};
-	let allWatchlists =
-		typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('usersWatchlist')) : {};
-	const currentUser = typeof window !== 'undefined' ? localStorage.getItem('currentUser') : '';
 
-	let watchlists = allWatchlists[currentUser] || [];
 	const saveUserWatchlist = async () => {
 		localStorage.setItem('usersWatchlist', JSON.stringify(allWatchlists));
 		for (let i = 0; i < watchlists.length; i++) {
@@ -85,9 +87,6 @@
 		watchlists = watchlists;
 		newWatchlistName = '';
 	};
-	let currentWatchlistIndex = 0;
-	let newWatchlistName = '';
-	let currentWatchlist = null;
 
 	const resetWatchlist = () => {
 		if (allWatchlists && allWatchlists[currentUser]) {
@@ -102,7 +101,6 @@
 			return;
 		}
 		const index = allWatchlists[currentUser].findIndex((list) => list.id === currentWatchlist.id);
-		console.log(index);
 		allWatchlists[currentUser].splice(index, 1);
 		allWatchlists = allWatchlists;
 		resetWatchlist();
@@ -124,12 +122,15 @@
 			<!-- table styling found on https://flowbite.com/docs/components/tables/  -->
 			<div class="flex flex-col" style="min-width: 200px">
 				<List singleSelection bind:selectedIndex={currentWatchlistIndex} class="list">
-					<div class="text-center bg-red-600 text-white">
+					<h4 class="text-center bg-cyan-700 text-white">
 						{currentUser}'s Watchlists
-					</div>
+					</h4>
 					{#each watchlists as watchlist, i}
 						<Item
-							on:click={() => (currentWatchlist = allWatchlists[currentUser].find(list => list.id == watchlist.id))}
+							on:click={() =>
+								(currentWatchlist = allWatchlists[currentUser].find(
+									(list) => list.id == watchlist.id
+								))}
 							selected={currentWatchlist?.id === watchlist?.id}
 						>
 							<Text class="py-2">

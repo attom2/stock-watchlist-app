@@ -15,10 +15,6 @@
 	<slot />
 </main>
 
-<footer>
-	<!-- <a href="https://iexcloud.io">Data provided by IEX Cloud</a> -->
-</footer>
-
 <style>
 	main {
 		flex: 1;
@@ -33,21 +29,4 @@
 		box-sizing: border-box;
 	}
 
-	footer {
-		position: absolute;
-		bottom: 0;
-		width: 100%;
-		height: 2.5rem;
-		text-align: center;
-	}
-
-	footer a {
-		font-weight: bold;
-	}
-
-	@media (min-width: 480px) {
-		footer {
-			padding: 40px 0;
-		}
-	}
 </style>
